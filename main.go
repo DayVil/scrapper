@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/DayVil/scrapper/src/config"
+	"github.com/DayVil/scrapper/src/proxy"
 )
 
 func main() {
-	cfg, err := config.NewCfg()
+	proxyList, err := proxy.GetProxys()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return
 	}
 
-	for _, line := range cfg.HttpSources {
+	for _, line := range proxyList {
 		fmt.Println(line)
 	}
+
+	fmt.Println("Amount of Proxies: ", len(proxyList))
 }
