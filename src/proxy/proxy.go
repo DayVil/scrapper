@@ -3,6 +3,7 @@ package proxy
 import (
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/DayVil/scrapper/src/scrape"
 )
@@ -33,7 +34,10 @@ func removeDuplicateEntries(addrs []string) []string {
 	return clean
 }
 
-func GetProxys() ([]string, error) {
+func GetProxyList() ([]string, error) {
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+
 	scrapingSites, err := getUrlSources()
 	if err != nil {
 		return nil, err
@@ -41,10 +45,21 @@ func GetProxys() ([]string, error) {
 
 	proxies := make([]string, 0)
 	for _, site := range scrapingSites {
-		proxyList := scrape.GetProxyListIpV4(site)
-		proxies = append(proxies, proxyList...)
+		wg.Add(1)
+		go scrape.GetProxyListIpV4(site, &proxies, &wg, &mutex)
 	}
+	wg.Wait()
+
 	proxies = removeDuplicateEntries(proxies)
 
 	return proxies, nil
+}
+
+func GetProxys() ([]string, error) {
+	proxyList, err := GetProxyList()
+	if err != nil {
+		return nil, err
+	}
+
+	return proxyList, nil
 }

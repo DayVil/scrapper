@@ -3,20 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/DayVil/scrapper/src/proxy"
 )
 
 func main() {
-	proxyList, err := proxy.GetProxys()
+	startTime := time.Now()
+	_, err := proxy.GetProxys()
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	elapsed := time.Since(startTime)
 
-	for _, line := range proxyList {
-		fmt.Println(line)
-	}
-
-	fmt.Println("Amount of Proxies: ", len(proxyList))
+	fmt.Println("\nTime taken: " + elapsed.String())
 }

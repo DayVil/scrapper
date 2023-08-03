@@ -6,24 +6,24 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"sync"
 )
 
 var re = regexp.MustCompile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}\b`)
 
-// TODO: go routine
-func GetProxyListIpV4(website string) []string {
-	var proxyList []string
+func GetProxyListIpV4(website string, proxyList *[]string, wg *sync.WaitGroup, mutex *sync.Mutex) {
+	defer wg.Done()
 
 	u, err := url.Parse(website)
 	if err != nil {
 		log.Println(err)
-		return proxyList
+		return
 	}
 
 	r, err := http.Get(u.String())
 	if err != nil {
 		log.Println(err)
-		return proxyList
+		return
 	}
 
 	reader := r.Body
@@ -37,13 +37,13 @@ func GetProxyListIpV4(website string) []string {
 		line := scanner.Text()
 		ip4 := re.FindAllString(line, -1)
 		if len(ip4) != 0 {
-			proxyList = append(proxyList, ip4...)
+			mutex.Lock()
+			*proxyList = append(*proxyList, ip4...)
+			mutex.Unlock()
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Println(err)
 	}
-
-	return proxyList
 }
