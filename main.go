@@ -9,13 +9,21 @@ import (
 )
 
 func main() {
-	startTime := time.Now()
-	_, err := proxy.GetProxys()
+	// startTime := time.Now()
+	timeout := time.Second * 20
+	proxies, err := proxy.GetProxys("./config/websource/http.txt", "https://www.amazon.de/", 3, timeout)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	elapsed := time.Since(startTime)
+	// elapsed := time.Since(startTime)
 
-	fmt.Println("\nTime taken: " + elapsed.String())
+	printProxys(proxies)
+	// fmt.Println("\nTime taken: " + elapsed.String())
+}
+
+func printProxys(proxyList []string) {
+	for _, list := range proxyList {
+		fmt.Println(list)
+	}
 }

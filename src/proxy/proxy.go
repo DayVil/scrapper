@@ -4,13 +4,14 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/DayVil/scrapper/src/scrape"
 )
 
-func getUrlSources() ([]string, error) {
+func getUrlSources(path string) ([]string, error) {
 	httpSources := make([]string, 0)
-	content, err := os.ReadFile("./config/websource/http.txt")
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -34,11 +35,11 @@ func removeDuplicateEntries(addrs []string) []string {
 	return clean
 }
 
-func GetProxyList() ([]string, error) {
+func GetProxyList(path string) ([]string, error) {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 
-	scrapingSites, err := getUrlSources()
+	scrapingSites, err := getUrlSources(path)
 	if err != nil {
 		return nil, err
 	}
@@ -49,17 +50,18 @@ func GetProxyList() ([]string, error) {
 		go scrape.GetProxyListIpV4(site, &proxies, &wg, &mutex)
 	}
 	wg.Wait()
-
 	proxies = removeDuplicateEntries(proxies)
 
 	return proxies, nil
 }
 
-func GetProxys() ([]string, error) {
-	proxyList, err := GetProxyList()
+func GetProxys(path string, websiteTry string, retries uint, timeout time.Duration) ([]string, error) {
+	proxyList, err := GetProxyList(path)
 	if err != nil {
 		return nil, err
 	}
+
+	proxyList = tryProxysHTTP(proxyList, websiteTry, int(retries), timeout)
 
 	return proxyList, nil
 }
