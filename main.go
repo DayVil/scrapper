@@ -2,30 +2,22 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/DayVil/scrapper/src/proxy"
+	"github.com/DayVil/scrapper/src/proxy/protocols"
 )
 
 const timeout = time.Second * 6
 const retries = 2
 
 func main() {
-	// proxyList, err := proxy.GetProxyListFromFile("./config/websource/http.txt")
-	proxyList, err := proxy.GetDefaultProxysHTTP()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	proxies := proxy.TryProxys(proxyList, "https://www.amazon.de/", retries, timeout)
-
-	printProxys(proxies)
+	var websites []protocols.ProxySites = proxy.GetProxySourcesDefault()
+	printWebsites(websites)
 }
 
-func printProxys(proxyList []string) {
-	for _, list := range proxyList {
+func printWebsites(websites []protocols.ProxySites) {
+	for _, list := range websites {
 		fmt.Println(list)
 	}
 }

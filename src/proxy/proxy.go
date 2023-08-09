@@ -1,84 +1,50 @@
 package proxy
 
 import (
-	"io"
+	"bufio"
+	"fmt"
 	"net/http"
-	"os"
-	"strings"
-	"sync"
-	"time"
 
-	"github.com/DayVil/scrapper/src/scrape"
+	"github.com/DayVil/scrapper/src/proxy/protocols"
 )
 
-func getUrlSources(path string) ([]string, error) {
-	content, err := os.ReadFile(path)
+func GetProxySources(url string, proto protocols.Protocols) []protocols.ProxySites {
+	sites := make([]protocols.ProxySites, 0)
+
+	response, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+		return sites
 	}
-	lines := strings.Split(string(content), "\n")
-	return lines, nil
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Println("HTTP GET request failed with status:", response.Status)
+		return sites
+	}
+
+	scanner := bufio.NewScanner(response.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		sites = append(sites, protocols.ProxySites{
+			Url:      line,
+			Protocol: proto,
+		})
+	}
+
+	return sites
 }
 
-func removeDuplicateEntries(addrs []string) []string {
-	bucket := make(map[string]bool)
-	clean := make([]string, 0)
+func GetProxySourcesDefault() []protocols.ProxySites {
+	sites := make([]protocols.ProxySites, 0)
 
-	for _, entry := range addrs {
-		if ok := bucket[entry]; !ok {
-			bucket[entry] = true
-			clean = append(clean, entry)
-		}
-	}
+	httpResponse := GetProxySources("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/http.txt", protocols.HttpProt)
+	socks4Response := GetProxySources("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/socks4.txt", protocols.Socks4)
+	socks5Response := GetProxySources("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/socks5.txt", protocols.Socks5)
 
-	return clean
-}
+	sites = append(sites, httpResponse...)
+	sites = append(sites, socks4Response...)
+	sites = append(sites, socks5Response...)
 
-func convertToIP4(websites []string) []string {
-	var wg sync.WaitGroup
-	var mutex sync.Mutex
-
-	proxies := make([]string, 0)
-	for _, site := range websites {
-		wg.Add(1)
-		go scrape.GetProxyListIpV4(site, &proxies, &wg, &mutex)
-	}
-	wg.Wait()
-	proxies = removeDuplicateEntries(proxies)
-	return proxies
-}
-
-func getDefaultProxys(url string) ([]string, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	text := string(body)
-	lines := strings.Split(text, "\n")
-	proxies := convertToIP4(lines)
-	return proxies, nil
-}
-
-func GetProxyListFromFile(path string) ([]string, error) {
-	scrapingSites, err := getUrlSources(path)
-	if err != nil {
-		return nil, err
-	}
-
-	proxies := convertToIP4(scrapingSites)
-
-	return proxies, nil
-}
-
-func TryProxys(proxyList []string, websiteTry string, retries uint, timeout time.Duration) []string {
-	proxyList = tryProxysHTTP(proxyList, websiteTry, int(retries), timeout)
-
-	return proxyList
+	return sites
 }
