@@ -13,7 +13,7 @@ const retries = 2
 
 func main() {
 	// proxyList, err := proxy.GetProxyListFromFile("./config/websource/http.txt")
-	proxyList, err := proxy.GetDefaultProxys()
+	proxyList, err := proxy.GetDefaultProxysHTTP()
 	if err != nil {
 		log.Fatal(err)
 		return

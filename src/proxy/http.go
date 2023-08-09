@@ -7,14 +7,15 @@ import (
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/DayVil/scrapper/src/structures"
 )
 
-type validProxy struct {
-	Proxies []string
-	MU      sync.Mutex
+func GetDefaultProxysHTTP() ([]string, error) {
+	return getDefaultProxys("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/http.txt")
 }
 
-func tryProxyHTTP(proxy string, site string, retries int, timeout time.Duration, proxies *validProxy, wg *sync.WaitGroup) {
+func tryProxyHTTP(proxy string, site string, retries int, timeout time.Duration, proxies *structures.ValidProxy, wg *sync.WaitGroup) {
 	defer wg.Done()
 	proxyURL, err := url.Parse("http://" + proxy)
 	if err != nil {
@@ -58,7 +59,7 @@ func tryProxyHTTP(proxy string, site string, retries int, timeout time.Duration,
 func tryProxysHTTP(proxyList []string, website string, retries int, timeout time.Duration) []string {
 	var wg sync.WaitGroup
 
-	validProxies := validProxy{Proxies: make([]string, 0), MU: sync.Mutex{}}
+	validProxies := structures.ValidProxy{Proxies: make([]string, 0), MU: sync.Mutex{}}
 	for _, proxy := range proxyList {
 		wg.Add(1)
 		go tryProxyHTTP(proxy, website, retries, timeout, &validProxies, &wg)

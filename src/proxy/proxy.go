@@ -48,8 +48,8 @@ func convertToIP4(websites []string) []string {
 	return proxies
 }
 
-func GetDefaultProxys() ([]string, error) {
-	resp, err := http.Get("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/http.txt")
+func getDefaultProxys(url string) ([]string, error) {
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
