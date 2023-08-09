@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"io"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -10,15 +12,12 @@ import (
 )
 
 func getUrlSources(path string) ([]string, error) {
-	httpSources := make([]string, 0)
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	lines := strings.Split(string(content), "\n")
-	httpSources = append(httpSources, lines...)
-
-	return httpSources, nil
+	return lines, nil
 }
 
 func removeDuplicateEntries(addrs []string) []string {
@@ -35,33 +34,51 @@ func removeDuplicateEntries(addrs []string) []string {
 	return clean
 }
 
-func GetProxyList(path string) ([]string, error) {
+func convertToIP4(websites []string) []string {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 
-	scrapingSites, err := getUrlSources(path)
-	if err != nil {
-		return nil, err
-	}
-
 	proxies := make([]string, 0)
-	for _, site := range scrapingSites {
+	for _, site := range websites {
 		wg.Add(1)
 		go scrape.GetProxyListIpV4(site, &proxies, &wg, &mutex)
 	}
 	wg.Wait()
 	proxies = removeDuplicateEntries(proxies)
-
-	return proxies, nil
+	return proxies
 }
 
-func GetProxys(path string, websiteTry string, retries uint, timeout time.Duration) ([]string, error) {
-	proxyList, err := GetProxyList(path)
+func GetDefaultProxys() ([]string, error) {
+	resp, err := http.Get("https://raw.githubusercontent.com/DayVil/scrapper/main/config/websource/http.txt")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
+	text := string(body)
+	lines := strings.Split(text, "\n")
+	proxies := convertToIP4(lines)
+	return proxies, nil
+}
+
+func GetProxyListFromFile(path string) ([]string, error) {
+	scrapingSites, err := getUrlSources(path)
+	if err != nil {
+		return nil, err
+	}
+
+	proxies := convertToIP4(scrapingSites)
+
+	return proxies, nil
+}
+
+func TryProxys(proxyList []string, websiteTry string, retries uint, timeout time.Duration) []string {
 	proxyList = tryProxysHTTP(proxyList, websiteTry, int(retries), timeout)
 
-	return proxyList, nil
+	return proxyList
 }

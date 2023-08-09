@@ -8,13 +8,18 @@ import (
 	"github.com/DayVil/scrapper/src/proxy"
 )
 
+const timeout = time.Second * 6
+const retries = 2
+
 func main() {
-	timeout := time.Second * 20
-	proxies, err := proxy.GetProxys("./config/websource/http.txt", "https://www.amazon.de/", 3, timeout)
+	// proxyList, err := proxy.GetProxyListFromFile("./config/websource/http.txt")
+	proxyList, err := proxy.GetDefaultProxys()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return
 	}
+
+	proxies := proxy.TryProxys(proxyList, "https://www.amazon.de/", retries, timeout)
 
 	printProxys(proxies)
 }
