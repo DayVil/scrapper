@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/DayVil/scrapper/src/proxy/protocols"
 )
@@ -35,6 +36,27 @@ func GetProxySources(url string, proto protocols.Protocols) []protocols.ProxySit
 	return sites
 }
 
+func GetProxySourcesFile(path string, proto protocols.Protocols) []protocols.ProxySites {
+	sites := make([]protocols.ProxySites, 0)
+
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		sites = append(sites, protocols.ProxySites{
+			Url:      line,
+			Protocol: proto,
+		})
+	}
+
+	return sites
+}
+
 func GetProxySourcesDefault() []protocols.ProxySites {
 	sites := make([]protocols.ProxySites, 0)
 
@@ -47,4 +69,14 @@ func GetProxySourcesDefault() []protocols.ProxySites {
 	sites = append(sites, socks5Response...)
 
 	return sites
+}
+
+// TODO: To implement
+func GetProxys(websites []protocols.ProxySites) []protocols.Proxy {
+	return nil
+}
+
+// TODO: To implement
+func TryProxies(proxyAddresses []protocols.Proxy) []protocols.Proxy {
+	return nil
 }
