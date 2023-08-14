@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/DayVil/scrapper/src/proxy/protocols"
+	"github.com/DayVil/scrapper/src/scraper"
 )
 
 func GetProxySources(url string, proto protocols.Protocols) []protocols.ProxySites {
@@ -71,12 +72,27 @@ func GetProxySourcesDefault() []protocols.ProxySites {
 	return sites
 }
 
-// TODO: To implement
-func GetProxys(websites []protocols.ProxySites) []protocols.Proxy {
-	return nil
+func removeDuplicate[T comparable](elements []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+
+	for _, item := range elements {
+		if _, value := allKeys[item]; !value {
+			list = append(list, item)
+		}
+	}
+
+	return list
 }
 
 // TODO: To implement
-func TryProxies(proxyAddresses []protocols.Proxy) []protocols.Proxy {
+func GetProxys(websites []protocols.ProxySites) []protocols.ProxyAdrr {
+	addrr := scraper.SearchSite(websites)
+	addrr = removeDuplicate(addrr)
+	return addrr
+}
+
+// TODO: To implement
+func TryProxies(proxyAddresses []protocols.ProxyAdrr) []protocols.ProxyAdrr {
 	return nil
 }

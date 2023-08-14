@@ -1,7 +1,5 @@
 package protocols
 
-import "net"
-
 // Different Protocols enum
 type Protocols int8
 
@@ -12,11 +10,8 @@ const (
 )
 
 type ProxySites struct {
-	Url string
+	Url      string
 	Protocol Protocols
 }
 
-type Proxy struct {
-	IpAddr net.TCPAddr
-	Protocol Protocols
-}
+type ProxyAdrr string
