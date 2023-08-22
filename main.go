@@ -2,23 +2,21 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/DayVil/scrapper/src/proxy"
 	"github.com/DayVil/scrapper/src/proxy/protocols"
 )
 
-const (
-	timeout = time.Second * 6
-	retries = 2
-)
-
 func main() {
-	var websites []protocols.ProxySites = proxy.GetProxySourcesDefault()
-	var proxyAddresses []protocols.ProxyAdrr = proxy.GetProxys(websites)
-	// var validProxys []protocols.Proxy = proxy.TryProxies(proxyAddresses)
-	printWebsites(websites)
-	printSlice(proxyAddresses)
+	// var websites []protocols.ProxySites = proxy.GetProxySourcesDefault()
+	// var proxyAddresses []protocols.ProxyAdrr = proxy.GetProxys(websites)
+	// var validProxys []protocols.ProxyAdrr = checker.TryProxiesDefaultW(proxyAddresses)
+	// printWebsites(websites)
+	// printSlice(validProxys)
+
+	defaultproxies := proxy.GetDefaultProxies()
+	printSlice(defaultproxies)
+
 }
 
 func printWebsites(websites []protocols.ProxySites) {

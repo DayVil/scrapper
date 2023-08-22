@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/DayVil/scrapper/src/checker"
 	"github.com/DayVil/scrapper/src/proxy/protocols"
 	"github.com/DayVil/scrapper/src/scraper"
 )
@@ -85,14 +86,16 @@ func removeDuplicate[T comparable](elements []T) []T {
 	return list
 }
 
-// TODO: To implement
 func GetProxys(websites []protocols.ProxySites) []protocols.ProxyAdrr {
 	addrr := scraper.SearchSite(websites)
 	addrr = removeDuplicate(addrr)
 	return addrr
 }
 
-// TODO: To implement
-func TryProxies(proxyAddresses []protocols.ProxyAdrr) []protocols.ProxyAdrr {
-	return nil
+func GetDefaultProxies() []protocols.ProxyAdrr {
+	websites := GetProxySourcesDefault()
+	proxys := GetProxys(websites)
+	validProxies := checker.TryProxiesDefaultW(proxys)
+
+	return validProxies
 }
