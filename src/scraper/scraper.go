@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -13,6 +14,7 @@ import (
 
 var re = regexp.MustCompile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}\b`)
 
+// SearchSite returns a list of proxies from the specified websites.
 func SearchSite(websites []protocols.ProxySites) []protocols.ProxyAdrr {
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -27,24 +29,25 @@ func SearchSite(websites []protocols.ProxySites) []protocols.ProxyAdrr {
 	return addrs
 }
 
+// searchSite returns a list of proxies from the specified website.
 func searchSite(website protocols.ProxySites, addrs *[]protocols.ProxyAdrr, wg *sync.WaitGroup, mutex *sync.Mutex) {
 	defer wg.Done()
 
 	res, err := http.Get(website.Url)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		fmt.Println("ERROR Code: " + strconv.Itoa(res.StatusCode) + " from " + website.Url)
+		fmt.Fprintln(os.Stderr, "ERROR Code: "+strconv.Itoa(res.StatusCode)+" from "+website.Url)
 		return
 	}
 
 	text, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 

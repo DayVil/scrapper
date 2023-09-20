@@ -1,5 +1,7 @@
 package protocols
 
+import "time"
+
 // Different Protocols enum
 type Protocols int8
 
@@ -15,3 +17,9 @@ type ProxySites struct {
 }
 
 type ProxyAdrr string
+
+const (
+	TIMEOUT   = 10 * time.Second
+	CHECKSITE = "http://pool.proxyspace.pro/judge.php"
+	RETRIES   = 3
+)

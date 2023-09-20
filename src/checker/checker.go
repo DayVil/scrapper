@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -11,25 +12,23 @@ import (
 	"github.com/DayVil/scrapper/src/proxy/protocols"
 )
 
-const (
-	TIMEOUT   = 10 * time.Second
-	CHECKSITE = "http://pool.proxyspace.pro/judge.php"
-	RETRIES   = 3
-)
-
+// validProxyMU is a mutex that protects the Elements field of validProxy.
 type validProxyMU struct {
 	Elements []protocols.ProxyAdrr
 	MU       sync.Mutex
 }
 
+// TryProxiesDefaultW is a wrapper for TryProxiesDefault that uses the default website.
 func TryProxiesDefaultW(addrs []protocols.ProxyAdrr) []protocols.ProxyAdrr {
-	return TryProxiesDefault(addrs, CHECKSITE)
+	return TryProxiesDefault(addrs, protocols.CHECKSITE)
 }
 
+// TryProxiesDefault is a wrapper for TryProxies that uses the default timeout and retries.
 func TryProxiesDefault(addrs []protocols.ProxyAdrr, website string) []protocols.ProxyAdrr {
-	return TryProxies(addrs, TIMEOUT, RETRIES, website)
+	return TryProxies(addrs, protocols.TIMEOUT, protocols.RETRIES, website)
 }
 
+// TryProxies returns a list of valid proxies from the specified addresses.
 func TryProxies(addrs []protocols.ProxyAdrr, timeout time.Duration, retries uint, testSite string) []protocols.ProxyAdrr {
 	validProxys := make([]protocols.ProxyAdrr, 0)
 	validMU := validProxyMU{
@@ -41,7 +40,7 @@ func TryProxies(addrs []protocols.ProxyAdrr, timeout time.Duration, retries uint
 	for _, addr := range addrs {
 		addrURL, err := url.Parse(string(addr))
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 
@@ -62,26 +61,27 @@ func TryProxies(addrs []protocols.ProxyAdrr, timeout time.Duration, retries uint
 	return validMU.Elements
 }
 
+// tryProxy tries to connect to the specified proxy.
 func tryProxy(client *http.Client, proxy protocols.ProxyAdrr, retries uint, validProxy *validProxyMU, wg *sync.WaitGroup, testSite string) {
 	defer wg.Done()
 
 	for i := 0; i < int(retries); i++ {
 		resp, err := client.Get(testSite)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			continue
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			fmt.Println("Status Code for " + testSite + " is " + strconv.Itoa(resp.StatusCode) + " for following proxy: " + string(proxy) + ", retry: " + strconv.Itoa(resp.StatusCode))
+			fmt.Fprintln(os.Stderr, "Status Code for "+testSite+" is "+strconv.Itoa(resp.StatusCode)+" for following proxy: "+string(proxy)+", retry: "+strconv.Itoa(resp.StatusCode))
 			continue
 		}
 
 		validProxy.MU.Lock()
 		validProxy.Elements = append(validProxy.Elements, proxy)
 		validProxy.MU.Unlock()
-		fmt.Println("Added " + proxy)
+		fmt.Fprintln(os.Stderr, "Added "+proxy)
 		break
 	}
 }

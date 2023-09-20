@@ -8,14 +8,11 @@ import (
 )
 
 func main() {
-	// var websites []protocols.ProxySites = proxy.GetProxySourcesDefault()
-	// var proxyAddresses []protocols.ProxyAdrr = proxy.GetProxys(websites)
-	// var validProxys []protocols.ProxyAdrr = checker.TryProxiesDefaultW(proxyAddresses)
-	// printWebsites(websites)
-	// printSlice(validProxys)
+	// defaultproxies := proxy.GetDefaultProxies()
+	// printSlice(defaultproxies)
 
-	defaultproxies := proxy.GetDefaultProxies()
-	printSlice(defaultproxies)
+	testSite := proxy.TrySite("https://www.stade.de/")
+	printSlice(testSite)
 
 }
 
