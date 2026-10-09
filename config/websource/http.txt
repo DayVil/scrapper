@@ -43,6 +43,7 @@ https://raw.githubusercontent.com/yemixzy/proxy-list/main/proxy-list/data.txt
 https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/http.txt
 https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/https.txt
 https://raw.githubusercontent.com/zevtyardt/proxy-list/main/http.txt
+https://rcloak.com/api/proxies/raw?protocol=http
 https://rootjazz.com/proxies/proxies.txt
 https://sheesh.rip/http.txt
 https://spys.me/proxy.txt
