@@ -26,3 +26,4 @@ https://spys.me/socks.txt
 https://www.freeproxychecker.com/result/socks5_proxies.txt
 https://www.proxy-list.download/api/v1/get?type=socks5
 https://proxyspace.pro/archive_socks5.txt
+https://rcloak.com/api/proxies/raw?protocol=socks5
